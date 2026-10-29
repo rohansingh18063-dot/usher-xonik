@@ -1,0 +1,28 @@
+/*
+ * Deliberately aggressive website styles. The widget must look exactly the
+ * same with or without them, and must not change how this page looks.
+ */
+html { font-size: 10px; }
+* {
+  font-family: "Comic Sans MS", "Comic Sans", cursive !important;
+  color: #d00000 !important;
+  letter-spacing: 2px !important;
+  box-sizing: content-box !important;
+  line-height: 3 !important;
+}
+body { margin: 0; padding: 24px 32px; background: #fffbe6; text-transform: uppercase; }
+button, [role="button"] {
+  background: #39ff14 !important;
+  border: 4px dashed #d00000 !important;
+  padding: 30px !important;
+  border-radius: 0 !important;
+  width: auto !important;
+  height: auto !important;
+}
+div, section, header, form, p, span, h2 { margin: 18px !important; border: 2px solid orange !important; }
+textarea, input { width: 40px !important; font-size: 8px !important; }
+svg { display: none !important; }
+img { width: 300px !important; height: 300px !important; }
+[aria-label], [role], [class*="chat"], [id*="chat"] { opacity: 0.2 !important; transform: rotate(3deg) !important; }
+.site-title { font-size: 32px; }
+.site-button { font-size: 18px; }

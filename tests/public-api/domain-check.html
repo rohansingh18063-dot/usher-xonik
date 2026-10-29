@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Domain Check</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; color: #0f172a; background: #fff; }
+      h1 { font-size: 22px; margin-bottom: 4px; }
+      p.lead { color: #475569; margin-top: 0; }
+      label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 4px; }
+      input { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font: 13px ui-monospace, monospace; }
+      button { margin-top: 16px; padding: 9px 16px; border: 0; border-radius: 6px; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; }
+      #result { margin-top: 24px; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; }
+      #result.allowed { border-color: #86efac; background: #f0fdf4; }
+      #result.blocked { border-color: #fca5a5; background: #fef2f2; }
+      #verdict { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
+      dl { display: grid; grid-template-columns: 140px 1fr; gap: 6px 12px; margin: 0; font-size: 14px; }
+      dt { color: #64748b; }
+      dd { margin: 0; word-break: break-word; }
+    </style>
+  </head>
+  <body>
+    <h1>Public chat API: domain check</h1>
+    <p class="lead">
+      Sends one message to the public chat API from this page's origin. The browser only lets the page read the reply
+      when this origin is on the client's allowed domains.
+    </p>
+
+    <form id="form">
+      <label for="api">App address</label>
+      <input id="api" name="api" value="http://localhost:3000" />
+      <label for="key">Public key</label>
+      <input id="key" name="key" placeholder="pk_live_..." />
+      <label for="message">Message</label>
+      <input id="message" name="message" value="What are your opening hours?" />
+      <button type="submit">Send from this page</button>
+    </form>
+
+    <div id="result" hidden>
+      <p id="verdict"></p>
+      <dl>
+        <dt>Page origin</dt><dd id="origin"></dd>
+        <dt>HTTP status</dt><dd id="status"></dd>
+        <dt>Details</dt><dd id="details"></dd>
+      </dl>
+    </div>
+
+    <script>
+      const form = document.getElementById("form");
+      const params = new URLSearchParams(location.search);
+      for (const name of ["api", "key", "message"]) {
+        if (params.get(name)) form.elements[name].value = params.get(name);
+      }
+
+      function show(outcome, status, details) {
+        const box = document.getElementById("result");
+        box.hidden = false;
+        box.className = outcome;
+        box.dataset.outcome = outcome;
+        document.getElementById("verdict").textContent =
+          outcome === "allowed" ? "Allowed: the assistant answered this website" : "Blocked: this website cannot use the key";
+        document.getElementById("origin").textContent = location.origin;
+        document.getElementById("status").textContent = status;
+        document.getElementById("details").textContent = details;
+      }
+
+      async function send() {
+        const api = form.elements.api.value.replace(/\/$/, "");
+        const key = form.elements.key.value.trim();
+        let response;
+        try {
+          response = await fetch(`${api}/api/public/chat?key=${encodeURIComponent(key)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId: crypto.randomUUID(), message: form.elements.message.value }),
+          });
+        } catch (error) {
+          // The server sent no CORS headers for this origin, so the browser
+          // hides the response from the page.
+          show("blocked", "Not readable", `The browser blocked the response (${error.message}).`);
+          return;
+        }
+
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          show("blocked", response.status, body?.error ? `${body.error.code}: ${body.error.message}` : "No details.");
+          return;
+        }
+
+        let reply = "";
+        const text = await response.text();
+        for (const line of text.split("\n").filter(Boolean)) {
+          const event = JSON.parse(line);
+          if (event.type === "text") reply += event.text;
+          if (event.type === "reset") reply = "";
+          if (event.type === "error") reply = `Error: ${event.message}`;
+        }
+        show("allowed", response.status, reply.trim() || "(empty reply)");
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        send();
+      });
+      if (params.get("auto") === "1") send();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+{
+  "name": "website-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test:db": "node --test tests/db/rls.test.mjs",
+    "test:e2e": "playwright test",
+    "packs:sync": "node scripts/sync-packs.mjs",
+    "eval:assistant": "node scripts/eval-assistant.mjs",
+    "test:unit": "node --conditions=react-server --test tests/unit/documents.test.mjs tests/unit/origin.test.mjs tests/unit/leads.test.mjs",
+    "eval:knowledge": "node scripts/eval-knowledge.mjs",
+    "test:public-api": "node scripts/test-public-api.mjs",
+    "test:page": "node scripts/serve-test-page.mjs",
+    "test:widget": "node scripts/test-widget.mjs",
+    "test:site": "node scripts/serve-sample-site.mjs",
+    "test:leads": "node --conditions=react-server scripts/test-leads.mjs",
+    "test:forms": "node scripts/test-forms.mjs",
+    "test:dashboard": "node scripts/test-dashboard.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0",
+    "mammoth": "^1.13.0",
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "unpdf": "^1.9.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.12",
+    "@electric-sql/pglite-pgvector": "^0.0.13",
+    "@playwright/test": "^1.64.1",
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.3",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
